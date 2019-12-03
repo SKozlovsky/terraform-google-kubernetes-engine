@@ -1,7 +1,7 @@
 # Shared VPC Cluster
 
-This example illustrates how to create a simple cluster using shared VPC helper submodule
-where the host network belong to shared vpc host project but the cluster to service project.
+This example demonstrates how to create a simple cluster using the shared VPC helper submodule.
+The network will be deployed in the host project and the cluster will be deployed in the service project.
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs

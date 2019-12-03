@@ -18,7 +18,6 @@
 
 provider "google" {
   version = "~> 2.18.0"
-  region  = var.region
 }
 
 resource "random_string" "suffix" {
