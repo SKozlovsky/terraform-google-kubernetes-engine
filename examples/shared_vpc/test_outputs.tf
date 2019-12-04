@@ -18,43 +18,43 @@
 // They do not need to be included in real-world uses of this module
 
 output "project_id" {
-  value = var.svpc_service_project_id
+  value       = var.svpc_service_project_id
   description = "The project ID the cluster is created in"
 }
 
 output "project_number" {
-  value = data.google_project.svpc_service_project.number
+  value       = data.google_project.svpc_service_project.number
   description = "The project number the cluster is created in"
 }
 
 output "host_project_id" {
-  value = var.svpc_host_project_id
+  value       = var.svpc_host_project_id
   description = "The project ID of the shared VPC's host"
 }
 
 output "host_project_number" {
-  value = data.google_project.svpc_host_project.number
+  value       = data.google_project.svpc_host_project.number
   description = "The project number of the shared VPC's host"
 }
 
 output "region" {
-  value = module.gke.region
+  value       = module.gke.region
   description = "The region the cluster is hosted in"
 }
 
 output "network" {
-  value = module.gke_cluster_svpc_network.network_name
+  value       = module.gke_cluster_svpc_network.network_name
   description = "The Shared VPC host project network the cluster is hosted in"
 
 }
 
 output "subnetwork" {
-  value = module.gke_cluster_svpc_network.subnets_names[0]
+  value       = module.gke_cluster_svpc_network.subnets_names[0]
   description = "The subnet the cluster is hosted in"
 }
 
 output "location" {
-  value = module.gke.location
+  value       = module.gke.location
   description = "Cluster location (region if regional cluster, zone if zonal cluster)"
 }
 
@@ -77,7 +77,6 @@ output "master_kubernetes_version" {
   description = "The master Kubernetes version"
   value       = module.gke.master_version
 }
-
 
 
 

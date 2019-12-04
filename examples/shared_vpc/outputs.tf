@@ -15,8 +15,8 @@
  */
 
 output "kubernetes_endpoint" {
-  sensitive = true
-  value     = module.gke.endpoint
+  sensitive   = true
+  value       = module.gke.endpoint
   description = "Cluster endpoint"
 }
 
@@ -26,7 +26,7 @@ output "client_token" {
 }
 
 output "ca_certificate" {
-  value = module.gke.ca_certificate
+  value       = module.gke.ca_certificate
   description = "Cluster ca certificate (base64 encoded)"
 }
 
