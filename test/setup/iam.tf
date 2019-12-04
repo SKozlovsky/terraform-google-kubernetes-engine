@@ -94,10 +94,8 @@ resource "google_service_account_key" "int_test" {
   service_account_id = google_service_account.int_test.id
 }
 
-// TODO: Uncomment it before PR and after local tests
-
-//resource "google_billing_account_iam_member" "int_billing_user" {
-//  billing_account_id = var.billing_account
-//  role               = "roles/billing.user"
-//  member             = "serviceAccount:${google_service_account.int_test.email}"
-//}
+resource "google_billing_account_iam_member" "int_billing_user" {
+  billing_account_id = var.billing_account
+  role               = "roles/billing.user"
+  member             = "serviceAccount:${google_service_account.int_test.email}"
+}

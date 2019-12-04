@@ -14,29 +14,187 @@
  * limitations under the License.
  */
 
-locals {
-  cluster_type = "shared-vpc"
-}
+
 
 provider "google" {
   version = "~> 2.18.0"
-  region  = var.region
 }
 
+resource "random_string" "suffix" {
+  length  = 4
+  special = false
+  upper   = false
+}
+
+//resource "google_project" "gke_shared_host_project" {
+//  name            = var.gke_shared_host_project
+//  folder_id       = var.folder_id
+//  project_id      = "${var.gke_shared_host_project}-${random_string.suffix.result}"
+//  billing_account = var.billing_account
+//}
+//
+//resource "google_project" "gke_service_project" {
+//  name            = var.gke_service_project
+//  folder_id       = var.folder_id
+//  project_id      = "${var.gke_service_project}-${random_string.suffix.result}"
+//  billing_account = var.billing_account
+//}
+//
+//
+///******************************************
+//	APIs enable
+// *****************************************/
+//
+//// enable api to created projects
+//resource "google_project_service" "gke_projects" {
+//  depends_on                 = [google_project.gke_service_project, google_project.gke_shared_host_project]
+//  count                      = 2
+//  project                    = element([google_project.gke_shared_host_project.project_id, google_project.gke_service_project.project_id], count.index)
+//  service                    = "compute.googleapis.com"
+//  disable_on_destroy         = false
+//  disable_dependent_services = false
+//}
+//
+///******************************************
+//	Projects creations and share VPC
+// *****************************************/
+//
+//resource "google_compute_shared_vpc_host_project" "shared_vpc_host" {
+//  depends_on = [
+//    google_project.gke_shared_host_project,
+//    google_project_service.gke_projects,
+//  ]
+//  project = google_project.gke_shared_host_project.project_id
+//}
+//
+//resource "google_compute_shared_vpc_service_project" "gke_service_project" {
+//  depends_on = [
+//    google_compute_shared_vpc_host_project.shared_vpc_host,
+//    null_resource.gke_dependencies
+//  ]
+//  host_project    = google_project.gke_shared_host_project.project_id
+//  service_project = google_project.gke_service_project.project_id
+//}
+//
+//resource "google_service_account" "gke_service" {
+//  depends_on   = [google_project.gke_service_project]
+//  account_id   = "gke-service-${random_string.suffix.result}"
+//  display_name = "gke-service"
+//  project      = google_project.gke_service_project.project_id
+//}
+
+/******************************************
+	Networking
+ *****************************************/
+
+locals {
+  gke_svpc_subnet     = "gke-svpc-main-${random_string.suffix.result}"
+  pods_gke_subnet     = "${local.gke_svpc_subnet}-pods"
+  services_gke_subnet = "${local.gke_svpc_subnet}-services"
+}
+
+
+module "gke_cluster_svpc_network" {
+  source       = "terraform-google-modules/network/google"
+  version      = "~> 1.5.0"
+  project_id   = var.svpc_host_project_id
+  network_name = "gke-svpc-network"
+
+  subnets = [
+    {
+      subnet_name   = local.gke_svpc_subnet
+      subnet_ip     = "10.0.0.0/17"
+      subnet_region = var.region
+    },
+  ]
+
+  secondary_ranges = {
+    "${local.gke_svpc_subnet}" = [
+      {
+        range_name    = local.pods_gke_subnet
+        ip_cidr_range = "192.168.0.0/18"
+      },
+      {
+        range_name    = local.services_gke_subnet
+        ip_cidr_range = "192.168.64.0/18"
+      },
+    ]
+  }
+}
+
+
+
+
+
+//resource "google_compute_network" "main" {
+//  depends_on = [
+//    google_project_service.gke_projects,
+//    google_project.gke_shared_host_project,
+//  ]
+//  name                    = "cft-gke-test-${random_string.suffix.result}"
+//  auto_create_subnetworks = false
+//  project                 = google_project.gke_shared_host_project.project_id
+//}
+//
+//resource "google_compute_subnetwork" "main" {
+//  depends_on    = [google_compute_network.main]
+//  name          = "cft-gke-test-${random_string.suffix.result}"
+//  ip_cidr_range = "10.0.0.0/17"
+//  network       = google_compute_network.main.self_link
+//  project       = google_project.gke_shared_host_project.project_id
+//  region        = var.region
+//
+//  secondary_ip_range {
+//    range_name    = "cft-gke-test-pods-${random_string.suffix.result}"
+//    ip_cidr_range = "192.168.0.0/18"
+//  }
+//
+//  secondary_ip_range {
+//    range_name    = "cft-gke-test-services-${random_string.suffix.result}"
+//    ip_cidr_range = "192.168.64.0/18"
+//  }
+//}
+
+
+
+//// Work around lack of `depends_on` for module.gke
+//resource "null_resource" "gke_dependencies" {
+//  depends_on = [
+//    google_project_service.gke_projects,
+//    google_compute_shared_vpc_host_project.shared_vpc_host
+//  ]
+//
+//  triggers = {
+//    project_id = google_project.gke_service_project.project_id
+//  }
+//}
+
+/******************************************
+	Main module with shared_vpc_helper
+ *****************************************/
+
 module "gke" {
-  source                 = "../../"
-  project_id             = var.project_id
-  name                   = "${local.cluster_type}-cluster${var.cluster_name_suffix}"
-  region                 = var.region
-  network                = var.network
-  network_project_id     = var.network_project_id
-  subnetwork             = var.subnetwork
-  ip_range_pods          = var.ip_range_pods
-  ip_range_services      = var.ip_range_services
-  create_service_account = false
-  service_account        = var.compute_engine_service_account
+  source                   = "../../"
+  enable_shared_vpc_helper = true
+  project_id               = var.svpc_service_project_id
+  name                     = "gke-svpc-cluster-${random_string.suffix.result}"
+  region                   = var.region
+  network                  = module.gke_cluster_svpc_network.network_name
+  network_project_id       = var.svpc_host_project_id
+  subnetwork               = module.gke_cluster_svpc_network.subnets_names[0]
+  ip_range_pods            = local.pods_gke_subnet
+  ip_range_services        = local.services_gke_subnet
+  create_service_account   = true
 }
 
 data "google_client_config" "default" {
+  depends_on = [module.gke]
 }
 
+data "google_project" "svpc_host_project" {
+  project_id = var.svpc_host_project_id
+}
+
+data "google_project" "svpc_service_project" {
+  project_id = var.svpc_service_project_id
+}

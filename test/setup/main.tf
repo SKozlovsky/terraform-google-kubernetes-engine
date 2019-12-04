@@ -116,7 +116,7 @@ resource "google_compute_shared_vpc_host_project" "gke_svpc_host_project" {
 // Create service account. Plane ressourcess are used in reason ISUUE TODO: add link to issue
 resource "google_project" "gke_service_project" {
   name            = "ci-gke-svpc-service"
-  folder_id       = var.folder_id
+  folder_id       = google_folder.ci_gke_folder.id
   project_id      = "ci-gke-svpc-service-${random_id.folder_rand.hex}"
   billing_account = var.billing_account
 }
