@@ -123,9 +123,9 @@ resource "google_project" "gke_service_project" {
 
 // Enable compute api to assigning it as a Shared VPC service project.
 resource "google_project_service" "gke_service_project_api" {
-  depends_on                 = [ google_project.gke_service_project ]
-  project                    = google_project.gke_service_project.project_id
-  service                    = "compute.googleapis.com"
+  depends_on = [google_project.gke_service_project]
+  project    = google_project.gke_service_project.project_id
+  service    = "compute.googleapis.com"
 }
 
 resource "google_compute_shared_vpc_service_project" "gke_service_project" {

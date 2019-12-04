@@ -26,66 +26,9 @@ resource "random_string" "suffix" {
   upper   = false
 }
 
-//resource "google_project" "gke_shared_host_project" {
-//  name            = var.gke_shared_host_project
-//  folder_id       = var.folder_id
-//  project_id      = "${var.gke_shared_host_project}-${random_string.suffix.result}"
-//  billing_account = var.billing_account
-//}
-//
-//resource "google_project" "gke_service_project" {
-//  name            = var.gke_service_project
-//  folder_id       = var.folder_id
-//  project_id      = "${var.gke_service_project}-${random_string.suffix.result}"
-//  billing_account = var.billing_account
-//}
-//
-//
-///******************************************
-//	APIs enable
-// *****************************************/
-//
-//// enable api to created projects
-//resource "google_project_service" "gke_projects" {
-//  depends_on                 = [google_project.gke_service_project, google_project.gke_shared_host_project]
-//  count                      = 2
-//  project                    = element([google_project.gke_shared_host_project.project_id, google_project.gke_service_project.project_id], count.index)
-//  service                    = "compute.googleapis.com"
-//  disable_on_destroy         = false
-//  disable_dependent_services = false
-//}
-//
-///******************************************
-//	Projects creations and share VPC
-// *****************************************/
-//
-//resource "google_compute_shared_vpc_host_project" "shared_vpc_host" {
-//  depends_on = [
-//    google_project.gke_shared_host_project,
-//    google_project_service.gke_projects,
-//  ]
-//  project = google_project.gke_shared_host_project.project_id
-//}
-//
-//resource "google_compute_shared_vpc_service_project" "gke_service_project" {
-//  depends_on = [
-//    google_compute_shared_vpc_host_project.shared_vpc_host,
-//    null_resource.gke_dependencies
-//  ]
-//  host_project    = google_project.gke_shared_host_project.project_id
-//  service_project = google_project.gke_service_project.project_id
-//}
-//
-//resource "google_service_account" "gke_service" {
-//  depends_on   = [google_project.gke_service_project]
-//  account_id   = "gke-service-${random_string.suffix.result}"
-//  display_name = "gke-service"
-//  project      = google_project.gke_service_project.project_id
-//}
-
-/******************************************
-	Networking
- *****************************************/
+/************************************************
+	Networking in shared VPC to host cluster in
+ ***********************************************/
 
 locals {
   gke_svpc_subnet     = "gke-svpc-main-${random_string.suffix.result}"
@@ -93,7 +36,7 @@ locals {
   services_gke_subnet = "${local.gke_svpc_subnet}-services"
 }
 
-
+// Inputs for Shared VPC aren't provided in reason it handled by VPC helper submodule
 module "gke_cluster_svpc_network" {
   source       = "terraform-google-modules/network/google"
   version      = "~> 1.5.0"
@@ -121,53 +64,6 @@ module "gke_cluster_svpc_network" {
     ]
   }
 }
-
-
-
-
-
-//resource "google_compute_network" "main" {
-//  depends_on = [
-//    google_project_service.gke_projects,
-//    google_project.gke_shared_host_project,
-//  ]
-//  name                    = "cft-gke-test-${random_string.suffix.result}"
-//  auto_create_subnetworks = false
-//  project                 = google_project.gke_shared_host_project.project_id
-//}
-//
-//resource "google_compute_subnetwork" "main" {
-//  depends_on    = [google_compute_network.main]
-//  name          = "cft-gke-test-${random_string.suffix.result}"
-//  ip_cidr_range = "10.0.0.0/17"
-//  network       = google_compute_network.main.self_link
-//  project       = google_project.gke_shared_host_project.project_id
-//  region        = var.region
-//
-//  secondary_ip_range {
-//    range_name    = "cft-gke-test-pods-${random_string.suffix.result}"
-//    ip_cidr_range = "192.168.0.0/18"
-//  }
-//
-//  secondary_ip_range {
-//    range_name    = "cft-gke-test-services-${random_string.suffix.result}"
-//    ip_cidr_range = "192.168.64.0/18"
-//  }
-//}
-
-
-
-//// Work around lack of `depends_on` for module.gke
-//resource "null_resource" "gke_dependencies" {
-//  depends_on = [
-//    google_project_service.gke_projects,
-//    google_compute_shared_vpc_host_project.shared_vpc_host
-//  ]
-//
-//  triggers = {
-//    project_id = google_project.gke_service_project.project_id
-//  }
-//}
 
 /******************************************
 	Main module with shared_vpc_helper

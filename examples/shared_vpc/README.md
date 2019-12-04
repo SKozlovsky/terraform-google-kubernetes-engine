@@ -8,53 +8,33 @@ The network will be deployed in the host project and the cluster will be deploye
 
 | Name | Description | Type | Default | Required |
 |------|-------------|:----:|:-----:|:-----:|
-| billing\_account | The billing account id associated with the project, e.g. XXXXXX-YYYYYY-ZZZZZZ | string | n/a | yes |
-| folder\_id | Folder to create shared vpc host and service projects in | string | n/a | yes |
-| gke\_service\_project | The service project ID to host the cluster in | string | n/a | yes |
-| gke\_shared\_host\_project | The GCP project housing the VPC network to host the cluster in | string | n/a | yes |
-| region | The region to host the cluster in | string | n/a | yes |
+| region | The region to host the cluster in | string | `"us-central1"` | no |
+| svpc\_host\_project\_id | The GCP project housing the VPC network to host the cluster in | string | n/a | yes |
+| svpc\_service\_project\_id | The service project ID to host the cluster in | string | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| ca\_certificate |  |
+| ca\_certificate | Cluster ca certificate (base64 encoded) |
 | client\_token |  |
-| cluster\_name | Cluster name |
-| host\_project\_id |  |
-| host\_project\_number |  |
+| cluster\_name | The Cluster name |
+| host\_project\_id | The project ID of the shared VPC's host |
+| host\_project\_number | The project number of the shared VPC's host |
 | ip\_range\_pods | The secondary IP range used for pods |
 | ip\_range\_services | The secondary IP range used for services |
-| kubernetes\_endpoint |  |
-| location |  |
+| kubernetes\_endpoint | Cluster endpoint |
+| location | Cluster location (region if regional cluster, zone if zonal cluster) |
 | master\_kubernetes\_version | The master Kubernetes version |
-| network |  |
-| project\_id |  |
-| project\_number |  |
-| region |  |
+| network | The Shared VPC host project network the cluster is hosted in |
+| project\_id | The project ID the cluster is created in |
+| project\_number | The project number the cluster is created in |
+| region | The region the cluster is hosted in |
 | service\_account | The default service account used for running nodes. |
-| subnetwork |  |
+| subnetwork | The subnet the cluster is hosted in |
 | zones | List of zones in which the cluster resides |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-
-## IAM Requirements
-
-You must have the following roles assigned to the `folder_id`:
-
-```hcl
-[
-  "roles/compute.admin",
-  "roles/compute.networkAdmin",
-  "roles/owner",
-  "roles/resourcemanager.projectCreator",
-  "roles/resourcemanager.folderAdmin",
-  "roles/resourcemanager.folderIamAdmin",
-  "roles/billing.projectManager",
-  "roles/compute.xpnAdmin",
-  "roles/resourcemanager.projectIamAdmin"
-]
-```
 
 ## Install
 
