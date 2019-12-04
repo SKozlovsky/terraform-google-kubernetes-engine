@@ -14,15 +14,6 @@
  * limitations under the License.
  */
 
-//variable "folder_id" {
-//  description = "Folder to create shared vpc host and service projects in"
-//}
-//
-//variable "billing_account" {
-//  description = "The billing account id associated with the project, e.g. XXXXXX-YYYYYY-ZZZZZZ"
-//}
-
-
 variable "region" {
   description = "The region to host the cluster in"
   default     = "us-central1"
