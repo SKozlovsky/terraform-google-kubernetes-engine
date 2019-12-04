@@ -17,7 +17,7 @@ The network will be deployed in the host project and the cluster will be deploye
 | Name | Description |
 |------|-------------|
 | ca\_certificate | Cluster ca certificate (base64 encoded) |
-| client\_token |  |
+| client\_token | The OAuth2 access token (base64 encoded) used by the client to authenticate against the Google Cloud API. |
 | cluster\_name | The Cluster name |
 | host\_project\_id | The project ID of the shared VPC's host |
 | host\_project\_number | The project number of the shared VPC's host |
